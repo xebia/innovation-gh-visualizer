@@ -15,12 +15,12 @@ export default class Main extends React.Component {
   };
 
   componentDidMount() {
-    db.allDocs({ include_docs: true }).then((docs) => {
-      console.log(docs);
-      this.setState({
-        rows: this.state.rows.concat(docs.rows)
-      })
-    });
+    // db.allDocs({ include_docs: true }).then((docs) => {
+    //   console.log(docs);
+    //   this.setState({
+    //     rows: this.state.rows.concat(docs.rows)
+    //   })
+    // });
 
     dbXebia.changes({
       since: 'now',
@@ -28,6 +28,10 @@ export default class Main extends React.Component {
       include_docs: true
     }).on('change', function(change) {
       console.log('change', change);
+
+      this.setState({
+        rows: this.state.rows.concat([change.doc])
+      });
     }).on('complete', function(info) {
       console.log('info', info);
     }).on('error', function (err) {
