@@ -1,0 +1,19 @@
+{
+  "name": "innovation-gh-visualizer",
+  "version": "1.0.0",
+  "description": "Innovationday 9 februari 2018",
+  "main": "testing.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xebia/innovation-gh-visualizer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xebia/innovation-gh-visualizer/issues"
+  },
+  "homepage": "https://github.com/xebia/innovation-gh-visualizer#readme",
+  "dependencies": {
+    "@google-cloud/bigquery": "^1.0.0"
+  }
+}
