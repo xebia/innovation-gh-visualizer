@@ -28,13 +28,19 @@ const argv = require('yargs')
     describe: 'Date to start retrieving Github events from',
     type: /\d\d\d\d-\d\d-\d\d/,
     alias: 's',
-    default: moment().subtract(3, 'day').format('YYYY-MM-DD')
+    default: moment().subtract(1, 'day').format('YYYY-MM-DD')
   })
-  .option('endDate', {
+  .option('stopAt', {
     describe: 'Last date to retrieve events from',
     alias: 'e',
     type: /\d\d\d\d-\d\d-\d\d/,
-    default: moment().subtract(3, 'day').format('YYYY-MM-DD')
+    default: moment().subtract(1, 'day').format('YYYY-MM-DD')
+  })
+  .option('interval', {
+    alias: 'i',
+    describe: 'Interval (in days) by which to retrieve events',
+    type: 'number',
+    default: 30,
   })
   .argv;
  
@@ -51,11 +57,11 @@ const bigquery = new BigQuery({
 // The name for the new dataset
 const datasetName = 'githubarchive';
 
-const createQuery = (date) => `SELECT id, type, created_at, repo.id, repo.name, actor.id, actor.login, payload
+const createQuery = (date, end) => `SELECT id, type, created_at, repo.id, repo.name, actor.id, actor.login, payload
 FROM (
   TABLE_DATE_RANGE([githubarchive:day.],
     TIMESTAMP('${date.format('YYYY-MM-DD')}'), 
-    TIMESTAMP('${date.format('YYYY-MM-DD')}')
+    TIMESTAMP('${end.format('YYYY-MM-DD')}')
   )
 )
 WHERE org.id = ${orgId}
@@ -78,8 +84,8 @@ function normalizeEvent(row) {
 }
 
 // Creates the new dataset
-async function executeQuery(date) {
-  const query = createQuery(date);
+async function executeQuery(date, end) {
+  const query = createQuery(date, end);
 
   debug('Executing query', query);
 
@@ -90,7 +96,7 @@ async function executeQuery(date) {
 
   const results = await bigquery.query(options);
 
-  console.log('Fetched for day', date.format('YYYY-MM-DD'), results[0].length, 'rows');
+  console.log('Fetched events from', date.format('YYYY-MM-DD'), 'to', end.format('YYYY-MM-DD'), '#rows', results[0].length);
 
   const contents = results[0]
     .map(parsePayload)
@@ -106,13 +112,19 @@ async function executeQuery(date) {
 async function main() {
   let numberOfRows = 0;
   let date = moment(argv.startDate);
-  const end = moment(argv.endDate);
+  let endDate = moment(date).add(argv.interval, 'day');
+  const stopAt = moment(argv.stopAt);
 
-  console.log('Querying GBG from', date.format('YYYY-MM-DD'), 'to', end.format('YYYY-MM-DD'));
+  console.log('Querying GBG from', date.format('YYYY-MM-DD'), 'to', stopAt.format('YYYY-MM-DD'));
 
-  while (date.isSameOrBefore(end)) {
-    numberOfRows += await executeQuery(date);
-    date = date.add(1, 'day');
+  while (endDate.isSameOrBefore(stopAt)) {
+    numberOfRows += await executeQuery(date, endDate);
+    date = moment(date).add(argv.interval, 'day');
+    endDate = moment(date).add(argv.interval, 'day');
+  }
+
+  if (date.isSameOrBefore(stopAt)) {
+    numberOfRows += await executeQuery(date, stopAt);
   }
 }
 
