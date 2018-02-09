@@ -1,0 +1,6 @@
+{
+  "rules": [
+    {"pathname": "/github/**", "dest": "http://localhost:5984"},
+    {"pathname": "/**", "dest": "http://localhost:3000"}
+  ]
+}
