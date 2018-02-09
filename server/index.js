@@ -45,8 +45,6 @@ function normalizeEvent(row) {
 
 // Creates the new dataset
 async function executeQuery(date) {
-  console.log('Querying GBG');
-
   const options = {
     query: createQuery(date),
     useLegacySql: true,
@@ -68,10 +66,12 @@ async function executeQuery(date) {
 }
 
 async function main() {
-  await util.promisify(fs.writeFile)(filepath, '');
+  // await util.promisify(fs.writeFile)(filepath, '');
   let numberOfRows = 0;
-  let date = moment('2017-01-01');
-  const end = moment('2017-01-03');
+  let date = moment('2017-02-04');
+  const end = moment('2018-01-01');
+
+  console.log('Querying GBG from', date.format('YYYY-MM-DD'), 'to', end.format('YYYY-MM-DD'));
 
   while (date.isBefore(end)) {
     numberOfRows += await executeQuery(date);
