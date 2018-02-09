@@ -1,24 +1,9 @@
-const _fetch = require('node-fetch');
+const fetch = require('./core/fetch');
 
 const token = process.env.GITHUB_TOKEN;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function fetch(...args) {
-  const response = await _fetch(...args);
-
-  if (response.status === 304) {
-    return response;
-  }
-
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(['Request failed', response.url, response.status, response.statusText].join(' '));
-  }
-
-  return response;
 }
 
 async function github(path, {page=0, etag}) {

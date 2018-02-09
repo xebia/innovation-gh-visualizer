@@ -6,10 +6,22 @@ const moment = require('moment');
 const debug = require('debug')('server:index');
 const chalk = require('chalk');
 
+const couchDB = require('./db');
+
 const argv = require('yargs')
   .usage('Command to extract events for one Github organization from the Github archive in Google Big Query')
   .detectLocale(false)
   .wrap(120)
+  .option('db', {
+    describe: 'Store fetched events in couchdb',
+    type: 'boolean',
+    default: true,
+  })
+  .option('dbName', {
+    describe: 'CouchDB name',
+    type: 'string',
+    default: 'github',
+  })
   .option('google', {
     describe: 'Google project ID',
     type: 'string',
@@ -100,12 +112,20 @@ async function executeQuery(date, end) {
   console.log('Fetched events from', chalk.blue(date.format('YYYY-MM-DD')), 'to', chalk.blue(end.format('YYYY-MM-DD')), '#rows', chalk.green(results[0].length));
 
   const contents = results[0]
-    .map(parsePayload)
-    .map(normalizeEvent)
+  .map(parsePayload)
+  .map(normalizeEvent)
+
+  if (argv.db) {
+    await couchDB.insert(argv.dbName, contents);
+
+    console.log('Stored #', chalk.green(contents.length), 'documents in couchdb');
+  } else {
+    const fileContents = contents
     .map(row => JSON.stringify(row))
     .join(',\n');
 
-  await util.promisify(fs.appendFile)(filepath, contents);
+    await util.promisify(fs.appendFile)(filepath, fileContents);
+  }
 
   return results[0].length;
 }
@@ -116,7 +136,7 @@ async function main() {
   let endDate = moment(date).add(argv.interval, 'day');
   const stopAt = moment(argv.stopAt);
 
-  console.log('Querying GBG from', chalk.blue(date.format('YYYY-MM-DD')), 'to', chalk.blue(stopAt.format('YYYY-MM-DD')));
+  console.log('Querying Big Query from', chalk.blue(date.format('YYYY-MM-DD')), 'to', chalk.blue(stopAt.format('YYYY-MM-DD')));
 
   while (endDate.isSameOrBefore(stopAt)) {
     numberOfRows += await executeQuery(date, endDate);
