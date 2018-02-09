@@ -4,6 +4,7 @@ const fs = require('fs');
 const util = require('util');
 const moment = require('moment');
 const debug = require('debug')('server:index');
+const chalk = require('chalk');
 
 const argv = require('yargs')
   .usage('Command to extract events for one Github organization from the Github archive in Google Big Query')
@@ -96,7 +97,7 @@ async function executeQuery(date, end) {
 
   const results = await bigquery.query(options);
 
-  console.log('Fetched events from', date.format('YYYY-MM-DD'), 'to', end.format('YYYY-MM-DD'), '#rows', results[0].length);
+  console.log('Fetched events from', chalk.blue(date.format('YYYY-MM-DD')), 'to', chalk.blue(end.format('YYYY-MM-DD')), '#rows', chalk.green(results[0].length));
 
   const contents = results[0]
     .map(parsePayload)
@@ -115,7 +116,7 @@ async function main() {
   let endDate = moment(date).add(argv.interval, 'day');
   const stopAt = moment(argv.stopAt);
 
-  console.log('Querying GBG from', date.format('YYYY-MM-DD'), 'to', stopAt.format('YYYY-MM-DD'));
+  console.log('Querying GBG from', chalk.blue(date.format('YYYY-MM-DD')), 'to', chalk.blue(stopAt.format('YYYY-MM-DD')));
 
   while (endDate.isSameOrBefore(stopAt)) {
     numberOfRows += await executeQuery(date, endDate);
@@ -126,6 +127,8 @@ async function main() {
   if (date.isSameOrBefore(stopAt)) {
     numberOfRows += await executeQuery(date, stopAt);
   }
+
+  console.log('🍾  Finished fetched', chalk.green(numberOfRows), 'number of rows');
 }
 
 main()
