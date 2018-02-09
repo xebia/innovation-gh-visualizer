@@ -30,7 +30,7 @@ export default class Main extends React.Component {
       console.log('change', change);
 
       this.setState({
-        rows: this.state.rows.concat([change.doc])
+        rows: this.state.rows.concat([change])
       });
     }).on('complete', (info) => {
       console.log('info', info);
