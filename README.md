@@ -19,10 +19,10 @@ Innovationday 9 februari 2018
 - api for visualization (GraphQL)
 
 ## Resources
-https://cloud.google.com/bigquery/what-is-bigquery
-https://aws.amazon.com/dynamodb/
-https://github.com/neonichu/githop
-https://github.com/abronte/BigQuery
-https://github.com/kkamkou/gitmostwanted.com
-https://www.githubarchive.org/
-https://public.tableau.com
+- https://cloud.google.com/bigquery/what-is-bigquery
+- https://aws.amazon.com/dynamodb/
+- https://github.com/neonichu/githop
+- https://github.com/abronte/BigQuery
+- https://github.com/kkamkou/gitmostwanted.com
+- https://www.githubarchive.org/
+- https://public.tableau.com
