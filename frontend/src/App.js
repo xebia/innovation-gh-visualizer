@@ -13,8 +13,17 @@ const myData = data.filter(d => !d.actor_login.includes('bot')).map(e => ({
   metadata: e.payload,
 }));
 
-const myScale = d3.scaleLinear().domain([0, 10])
-const typeScale = d3.scaleOrdinal(d3.schemeAccent).domain(['PushEvent', 'IssueCommentEvent', 'DeleteEvent', 'IssuesEvent', 'PullRequestEvent', 'ForkEvent'])
+const myScale = d3.scaleLinear().domain([0, 10]);
+const typeScale = d3
+  .scaleOrdinal(d3.schemeAccent)
+  .domain([
+    'PushEvent',
+    'IssueCommentEvent',
+    'DeleteEvent',
+    'IssuesEvent',
+    'PullRequestEvent',
+    'ForkEvent',
+  ]);
 
 // {
 //   user,
@@ -26,28 +35,24 @@ const typeScale = d3.scaleOrdinal(d3.schemeAccent).domain(['PushEvent', 'IssueCo
 console.log(myData);
 
 class App extends Component {
-  componentDidMount(){
-    d3.select("#svg")
-  .selectAll("circle")
-  .data(myData)
-  .enter().append("circle")
-  .attr('r', (d, i, l) => {
-      return 4;
-    }
-  )
-  .attr()
-  .attr('cx', (d, i, l) => {
-    return i;
-  })
-  .attr('cy', d => d);
-
+  componentDidMount() {
+    d3
+      .select('#svg')
+      .selectAll('circle')
+      .data(myData)
+      .enter()
+      .append('circle')
+      .attr('r', (d, i, l) => {
+        return 4;
+      })
+      .attr()
+      .attr('cx', (d, i, l) => {
+        return i;
+      })
+      .attr('cy', d => d);
   }
   render() {
-    return (
-      <svg id="svg">
-
-      </svg>
-    );
+    return <svg id="svg" />;
   }
 }
 
