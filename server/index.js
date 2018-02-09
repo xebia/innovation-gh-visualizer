@@ -3,11 +3,45 @@ const BigQuery = require('@google-cloud/bigquery');
 const fs = require('fs');
 const util = require('util');
 const moment = require('moment');
+const debug = require('debug')('server:index');
+
+const argv = require('yargs')
+  .usage('Command to extract events for one Github organization from the Github archive in Google Big Query')
+  .detectLocale(false)
+  .wrap(120)
+  .option('google', {
+    describe: 'Google project ID',
+    type: 'string',
+    required: true,
+  })
+  .option('org', {
+    describe: 'Github organization ID',
+    type: 'number',
+    required: true,
+  })
+  .option('file', {
+    describe: 'Path to the file where all events are stored',
+    type: 'string',
+    default: 'events.json',
+  })
+  .option('startDate', {
+    describe: 'Date to start retrieving Github events from',
+    type: /\d\d\d\d-\d\d-\d\d/,
+    alias: 's',
+    default: moment().subtract(3, 'day').format('YYYY-MM-DD')
+  })
+  .option('endDate', {
+    describe: 'Last date to retrieve events from',
+    alias: 'e',
+    type: /\d\d\d\d-\d\d-\d\d/,
+    default: moment().subtract(3, 'day').format('YYYY-MM-DD')
+  })
+  .argv;
  
 // Your Google Cloud Platform project ID
-const projectId = '320538068341';
-const orgId = 22632046;
-const filepath = 'events.json'; 
+const projectId = argv.google;
+const orgId = argv.org;
+const filepath = argv.file; 
 
 // Creates a client
 const bigquery = new BigQuery({
@@ -45,8 +79,12 @@ function normalizeEvent(row) {
 
 // Creates the new dataset
 async function executeQuery(date) {
+  const query = createQuery(date);
+
+  debug('Executing query', query);
+
   const options = {
-    query: createQuery(date),
+    query,
     useLegacySql: true,
   };
 
@@ -66,14 +104,13 @@ async function executeQuery(date) {
 }
 
 async function main() {
-  // await util.promisify(fs.writeFile)(filepath, '');
   let numberOfRows = 0;
-  let date = moment('2017-02-04');
-  const end = moment('2018-01-01');
+  let date = moment(argv.startDate);
+  const end = moment(argv.endDate);
 
   console.log('Querying GBG from', date.format('YYYY-MM-DD'), 'to', end.format('YYYY-MM-DD'));
 
-  while (date.isBefore(end)) {
+  while (date.isSameOrBefore(end)) {
     numberOfRows += await executeQuery(date);
     date = date.add(1, 'day');
   }
