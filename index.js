@@ -12,28 +12,39 @@ const bigquery = new BigQuery({
 // The name for the new dataset
 const datasetName = 'githubarchive';
 
-const query = `SELECT actor.login, COUNT(*) as nevents
+const query = `SELECT id, type, created_at, repo.id, repo.name, actor.id, actor.login, payload
 FROM (
   TABLE_DATE_RANGE([githubarchive:day.],
-    TIMESTAMP('2018-01-01'), 
+    TIMESTAMP('2018-02-08'), 
     TIMESTAMP('2018-02-09')
   )
 ) 
 WHERE org.id = 22632046
-GROUP BY actor.login
-ORDER BY nevents DESC`;
+ORDER BY created_at`;
 
 const options = {
   query,
   useLegacySql: true,
 };
 
+function parsePayload(row) {
+  try {
+    return Object.assign({}, row, {
+      payload: JSON.parse(row.payload),
+    });
+  } catch (err) {
+    return row;
+  }
+}
+
 // Creates the new dataset
-bigquery
-  .query(options)
-  .then(results => {
-    console.log(results);
-  })
-  .catch(err => {
-    console.error('ERROR:', err);
-  });
+async function main() {
+  const results = await bigquery.query(options);
+  
+  results
+    .map(parsePayload)
+    .forEach(row => console.log(JSON.stringify(row)));
+}
+
+main()
+  .catch(err => console.error(err));
