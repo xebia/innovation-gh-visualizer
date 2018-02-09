@@ -1,4 +1,5 @@
 const fetch = require('./core/fetch');
+const couchDB = require('./db');
 
 const token = process.env.GITHUB_TOKEN;
 
@@ -48,7 +49,11 @@ async function main() {
 
     etag = result.etag;
 
-    console.log(JSON.stringify(result.body.map(normalizeEvent)));
+    const events = result.body.map(normalizeEvent);
+
+    console.log('Fetch events #', events.length);
+
+    await couchDB.insert('xebia', events);
 
     await sleep(5000);
   }

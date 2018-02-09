@@ -3,6 +3,7 @@ import PouchDB from 'pouchdb';
 import Head from 'next/head';
 
 const db = new PouchDB('http://localhost:9001/github');
+const dbXebia = new PouchDB('http://localhost:9001/xebia');
 
 db.info().then(function (info) {
   console.log(info);
@@ -19,6 +20,18 @@ export default class Main extends React.Component {
       this.setState({
         rows: this.state.rows.concat(docs.rows)
       })
+    });
+
+    dbXebia.changes({
+      since: 'now',
+      live: true,
+      include_docs: true
+    }).on('change', function(change) {
+      console.log('change', change);
+    }).on('complete', function(info) {
+      console.log('info', info);
+    }).on('error', function (err) {
+      console.log(err);
     });
   }
 
