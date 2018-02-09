@@ -26,15 +26,15 @@ export default class Main extends React.Component {
       since: 'now',
       live: true,
       include_docs: true
-    }).on('change', function(change) {
+    }).on('change', (change) => {
       console.log('change', change);
 
       this.setState({
         rows: this.state.rows.concat([change.doc])
       });
-    }).on('complete', function(info) {
+    }).on('complete', (info) => {
       console.log('info', info);
-    }).on('error', function (err) {
+    }).on('error', (err) => {
       console.log(err);
     });
   }
