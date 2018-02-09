@@ -21,10 +21,7 @@ const eventsByUser = d3
 
 const squareSize = 10;
 const gutter = 5;
-const xScaleSquare = d3
-  .scaleLinear()
-  .domain([0, 10])
-  .range([0, 10 * (squareSize + gutter)]);
+const xScaleSquare = x =>  x * (squareSize + gutter);
 
 const typeScale = d3
   .scaleOrdinal(scaleChromatic.schemeAccent)
@@ -49,7 +46,7 @@ class App extends Component {
     d3
       .select('#svg')
       .selectAll('circle')
-      .data(eventsByUser['ndelangen'])
+      .data(eventsByUser.ndelangen)
       .enter()
       .append('svg:rect')
       .attr('width', squareSize)
