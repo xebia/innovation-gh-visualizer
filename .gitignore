@@ -22,3 +22,6 @@ yarn-debug.log*
 yarn-error.log*
 
 server/events.json
+
+#sample data
+frontend/src/sample
