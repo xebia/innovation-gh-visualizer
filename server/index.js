@@ -1,9 +1,12 @@
 // Imports the Google Cloud client library
 const BigQuery = require('@google-cloud/bigquery');
+const fs = require('fs');
+const util = require('util');
  
 // Your Google Cloud Platform project ID
 const projectId = '320538068341';
- 
+const filepath = 'events.json'; 
+
 // Creates a client
 const bigquery = new BigQuery({
   projectId: projectId,
@@ -37,13 +40,19 @@ function parsePayload(row) {
   }
 }
 
+async function saveRow(row) {
+  return util.promisify(fs.appendFile)(filepath, JSON.stringify(row));
+}
+
 // Creates the new dataset
 async function main() {
+  fs.closeSync(fs.openSync(filepath, 'w'));
+
   const results = await bigquery.query(options);
   
-  results
+  return Promise.all(results
     .map(parsePayload)
-    .forEach(row => console.log(JSON.stringify(row)));
+    .map(saveRow));
 }
 
 main()
