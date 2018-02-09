@@ -40,19 +40,20 @@ function parsePayload(row) {
   }
 }
 
-async function saveRow(row) {
-  return util.promisify(fs.appendFile)(filepath, JSON.stringify(row));
-}
-
 // Creates the new dataset
 async function main() {
-  fs.closeSync(fs.openSync(filepath, 'w'));
+  console.log('Querying GBG');
 
   const results = await bigquery.query(options);
-  
-  return Promise.all(results
+
+  console.log('Fetched', results[0].length, 'rows');
+
+  const contents = results[0]
     .map(parsePayload)
-    .map(saveRow));
+    .map(row => JSON.stringify(row))
+    .join(',\n');
+
+  await util.promisify(fs.writeFile)(filepath, `[\n${contents}\n]`);
 }
 
 main()
