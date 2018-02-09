@@ -30,10 +30,10 @@ class App extends Component {
         return d.key;
       });
     
-    var nameSeries = dateSeries.selectAll("p")
-      .data(function (d) {
-        return d;
-      }).enter
+    // var nameSeries = dateSeries.selectAll("p")
+    //   .data(function (d) {
+    //     return d;
+    //   }).enter
 
   }
   render() {
