@@ -4,7 +4,8 @@ import './App.css';
 
 import data from './data.json';
 
-const d3 = window.d3;
+import * as d3 from 'd3';
+import * as scaleChromatic from 'd3-scale-chromatic';
 
 const myData = data.filter(d => !d.actor_login.includes('bot')).map(e => ({
   user: e.actor_login,
@@ -13,9 +14,20 @@ const myData = data.filter(d => !d.actor_login.includes('bot')).map(e => ({
   metadata: e.payload,
 }));
 
-const myScale = d3.scaleLinear().domain([0, 10]);
+const eventsByUser = d3
+  .nest()
+  .key(d => d.user)
+  .object(myData);
+
+const squareSize = 10;
+const gutter = 5;
+const xScaleSquare = d3
+  .scaleLinear()
+  .domain([0, 10])
+  .range([0, 10 * (squareSize + gutter)]);
+
 const typeScale = d3
-  .scaleOrdinal(d3.schemeAccent)
+  .scaleOrdinal(scaleChromatic.schemeAccent)
   .domain([
     'PushEvent',
     'IssueCommentEvent',
@@ -32,24 +44,22 @@ const typeScale = d3
 //   meta,
 // }
 
-console.log(myData);
-
 class App extends Component {
   componentDidMount() {
     d3
       .select('#svg')
       .selectAll('circle')
-      .data(myData)
+      .data(eventsByUser['ndelangen'])
       .enter()
-      .append('circle')
-      .attr('r', (d, i, l) => {
-        return 4;
+      .append('svg:rect')
+      .attr('width', squareSize)
+      .attr('height', squareSize)
+      .attr('x', (d, i) => {
+        return xScaleSquare(i);
       })
-      .attr()
-      .attr('cx', (d, i, l) => {
-        return i;
-      })
-      .attr('cy', d => d);
+      .attr('fill', ({ type }) => {
+        return typeScale(type);
+      });
   }
   render() {
     return <svg id="svg" />;
