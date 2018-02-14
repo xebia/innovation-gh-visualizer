@@ -6,9 +6,9 @@ const moment = require('moment');
 const debug = require('debug')('server:index');
 const chalk = require('chalk');
 
-const couchDB = require('./db');
+const couchDB = require('./core/couchdb');
 
-const argv = require('yargs')
+const {argv} = require('yargs')
   .usage('Command to extract events for one Github organization from the Github archive in Google Big Query')
   .detectLocale(false)
   .wrap(120)
@@ -20,7 +20,7 @@ const argv = require('yargs')
   .option('dbName', {
     describe: 'CouchDB name',
     type: 'string',
-    default: 'github',
+    required: true,
   })
   .option('google', {
     describe: 'Google project ID',
@@ -54,8 +54,7 @@ const argv = require('yargs')
     describe: 'Interval (in days) by which to retrieve events',
     type: 'number',
     default: 30,
-  })
-  .argv;
+  });
  
 // Your Google Cloud Platform project ID
 const projectId = argv.google;
@@ -64,13 +63,13 @@ const filepath = argv.file;
 
 // Creates a client
 const bigquery = new BigQuery({
-  projectId: projectId,
+  projectId,
 });
  
 // The name for the new dataset
 const datasetName = 'githubarchive';
 
-const createQuery = (date, end) => `SELECT id, type, created_at, repo.id, repo.name, actor.id, actor.login, payload
+const createQuery = (date, end) => `SELECT id, type, created_at, org.id, repo.id, repo.name, actor.id, actor.login, payload
 FROM (
   TABLE_DATE_RANGE([githubarchive:day.],
     TIMESTAMP('${date.format('YYYY-MM-DD')}'), 
@@ -118,7 +117,7 @@ async function executeQuery(date, end) {
   if (argv.db) {
     await couchDB.insert(argv.dbName, contents);
 
-    console.log('Stored #', chalk.green(contents.length), 'documents in couchdb');
+    console.log('Stored #', chalk.green(contents.length), 'documents in couchdb', argv.dbName);
   } else {
     const fileContents = contents
     .map(row => JSON.stringify(row))

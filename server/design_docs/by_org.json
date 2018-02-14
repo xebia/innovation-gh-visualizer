@@ -1,0 +1,8 @@
+{
+  "_id": "_design/by_org",
+  "views": {
+    "by_org": {
+      "map": "function(doc) { emit([doc.org_id, doc.created_at]) }"
+    }
+  }
+}
